@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Lofi ATC - Galeão</h1>
-        <p>Relaxe ouvindo conversas do ATC do Aeroporto do Galeão com lo-fi brasileiro.</p>
+        <p></p>
         
         <div class="player">
             <button id="playPause">▶ Play</button>
@@ -18,13 +18,21 @@
         <div class="youtube-container">
             <iframe 
                 id="atcPlayer"
-                width="300" 
-                height="170" 
-                src="https://www.youtube.com/embed/xv3h5tBDOmY?enablejsapi=1&autoplay=0&loop=1&playlist=xv3h5tBDOmY" 
+                width="560" 
+                height="315" 
+                src="https://www.youtube.com/embed/Efr53DWH4kE?enablejsapi=1&autoplay=0&loop=1&playlist=Efr53DWH4kE" 
                 frameborder="0"
                 allow="autoplay; encrypted-media"
                 allowfullscreen>
             </iframe>
+        </div>
+
+        <div class="volume-control">
+            <label for="atcVolume">Volume ATC:</label>
+            <input type="range" id="atcVolume" min="0" max="100" value="50">
+            <br>
+            <label for="lofiVolume">Volume Lo-Fi:</label>
+            <input type="range" id="lofiVolume" min="0" max="100" value="50">
         </div>
 
         <p><small>Fonte: YouTube</small></p>
