@@ -38,3 +38,59 @@ playPauseButton.addEventListener("click", () => {
     }
     isPlaying = !isPlaying;
 });
+
+// Flight tracking system
+const flights = new Map();
+
+function updateFlightTable() {
+    const tableBody = document.getElementById('flightTableBody');
+    tableBody.innerHTML = '';
+    
+    flights.forEach((flight, flightNumber) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${flightNumber}</td>
+            <td class="status-${flight.status.toLowerCase()}">${flight.status}</td>
+            <td>${flight.altitude}ft</td>
+            <td>${flight.speed}kts</td>
+            <td>${flight.lastUpdate}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function addOrUpdateFlight(flightNumber, status, altitude, speed) {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    
+    flights.set(flightNumber, {
+        status,
+        altitude,
+        speed,
+        lastUpdate: timeString
+    });
+    
+    updateFlightTable();
+}
+
+// Simulate flight updates (you can replace this with real ATC data parsing)
+function simulateFlightUpdates() {
+    const flightNumbers = ['LA3300', 'G3 1766', 'AD 4032', 'LA 3301'];
+    const statuses = ['Active', 'Holding', 'Landed'];
+    const altitudes = [30000, 25000, 20000, 15000, 10000, 5000];
+    const speeds = [450, 400, 350, 300, 250, 200];
+    
+    setInterval(() => {
+        const randomFlight = flightNumbers[Math.floor(Math.random() * flightNumbers.length)];
+        const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+        const randomAltitude = altitudes[Math.floor(Math.random() * altitudes.length)];
+        const randomSpeed = speeds[Math.floor(Math.random() * speeds.length)];
+        
+        addOrUpdateFlight(randomFlight, randomStatus, randomAltitude, randomSpeed);
+    }, 5000); // Update every 5 seconds
+}
+
+// Start flight simulation when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    simulateFlightUpdates();
+});

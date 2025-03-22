@@ -28,6 +28,24 @@
             </iframe>
         </div>
 
+        <div class="flight-status">
+            <h2>Flight Status</h2>
+            <table id="flightTable">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Status</th>
+                        <th>Altitude</th>
+                        <th>Speed</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody id="flightTableBody">
+                    <!-- Flights will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
         <div class="volume-control">
             <label for="atcVolume">Volume ATC:</label>
             <input type="range" id="atcVolume" min="0" max="100" value="50">
