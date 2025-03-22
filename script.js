@@ -42,6 +42,14 @@ playPauseButton.addEventListener("click", () => {
 // Flight tracking system
 const flights = new Map();
 
+function convertFeetToMeters(feet) {
+    return Math.round(feet * 0.3048);
+}
+
+function convertKnotsToKmh(knots) {
+    return Math.round(knots * 1.852);
+}
+
 function updateFlightTable() {
     const tableBody = document.getElementById('flightTableBody');
     tableBody.innerHTML = '';
@@ -50,17 +58,16 @@ function updateFlightTable() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${flightNumber}</td>
-            <td>${flight.route}</td>
             <td class="status-${flight.status.toLowerCase()}">${flight.status}</td>
-            <td>${flight.altitude}ft</td>
-            <td>${flight.speed}kts</td>
+            <td>${convertFeetToMeters(flight.altitude)}m</td>
+            <td>${convertKnotsToKmh(flight.speed)}km/h</td>
             <td>${flight.lastUpdate}</td>
         `;
         tableBody.appendChild(row);
     });
 }
 
-function addOrUpdateFlight(flightNumber, status, altitude, speed, route, airline) {
+function addOrUpdateFlight(flightNumber, status, altitude, speed) {
     const now = new Date();
     const updateTime = now.toLocaleTimeString('en-US', { 
         hour12: false,
@@ -68,16 +75,17 @@ function addOrUpdateFlight(flightNumber, status, altitude, speed, route, airline
         minute: '2-digit'
     });
     
-    flights.set(flightNumber, {
-        status,
-        altitude,
-        speed,
-        lastUpdate: updateTime,
-        route,
-        airline
-    });
-    
-    updateFlightTable();
+    // Only update if the flight exists or if it's not landed
+    if (flights.has(flightNumber) || status !== 'Landed') {
+        flights.set(flightNumber, {
+            status,
+            altitude,
+            speed,
+            lastUpdate: updateTime
+        });
+        
+        updateFlightTable();
+    }
 }
 
 function updateCurrentTime() {
@@ -96,109 +104,32 @@ const BSB_LON = -47.9186;
 
 async function fetchBSBFlights() {
     try {
-        // OpenSky Network API endpoint for flights in BSB area
         const response = await fetch(`https://opensky-network.org/api/states/all?lamin=${BSB_LAT-0.5}&lomin=${BSB_LON-0.5}&lamax=${BSB_LAT+0.5}&lomax=${BSB_LON+0.5}`);
         const data = await response.json();
         
         if (data.states) {
-            // Clear previous flights
-            flights.clear();
-            
             // Process each flight
-            data.states.forEach(state => {
+            for (const state of data.states) {
                 const [icao24, callsign, origin_country, time_position, time_velocity, longitude, latitude, altitude, on_ground, velocity, true_track, vertical_rate, sensors, geo_altitude, squawk, spi, position_source, category] = state;
                 
-                // Only process flights that are not on the ground
-                if (!on_ground) {
-                    const flightNumber = callsign.trim();
-                    const airline = getAirlineFromCallsign(flightNumber);
-                    const route = determineRoute(latitude, longitude);
-                    const status = determineStatus(vertical_rate, velocity);
+                // Only process flights that have a callsign
+                if (callsign) {
+                    const status = on_ground ? 'Landed' : determineStatus(vertical_rate, velocity);
                     
                     addOrUpdateFlight(
-                        flightNumber,
+                        callsign.trim(),
                         status,
                         Math.round(altitude),
-                        Math.round(velocity),
-                        route,
-                        airline
+                        Math.round(velocity)
                     );
                 }
-            });
+            }
+        } else {
+            console.log('No flight states available');
         }
     } catch (error) {
         console.error('Error fetching flight data:', error);
     }
-}
-
-function getAirlineFromCallsign(callsign) {
-    // Map common airline codes to full names
-    const airlines = {
-        'LA': 'LATAM',
-        'G3': 'GOL',
-        'AD': 'Azul',
-        'AA': 'American Airlines',
-        'AF': 'Air France',
-        'BA': 'British Airways',
-        'DL': 'Delta',
-        'IB': 'Iberia',
-        'KL': 'KLM',
-        'LH': 'Lufthansa',
-        'QR': 'Qatar Airways',
-        'TK': 'Turkish Airlines',
-        'UA': 'United Airlines'
-    };
-    
-    const code = callsign.substring(0, 2);
-    return airlines[code] || 'Unknown';
-}
-
-function determineRoute(lat, lon) {
-    // Calculate if flight is arriving or departing based on position relative to BSB
-    const isArriving = lat > BSB_LAT;
-    const destination = isArriving ? 'BSB' : getNearestAirport(lat, lon);
-    return isArriving ? `${destination} → BSB` : `BSB → ${destination}`;
-}
-
-function getNearestAirport(lat, lon) {
-    // List of major Brazilian airports with their coordinates
-    const airports = {
-        'GRU': { lat: -23.4356, lon: -46.4731 },
-        'CNF': { lat: -19.6337, lon: -43.9688 },
-        'FOR': { lat: -3.7762, lon: -38.5322 },
-        'SDU': { lat: -22.9105, lon: -43.1631 },
-        'MAO': { lat: -3.0386, lon: -60.0497 },
-        'REC': { lat: -8.1264, lon: -34.9236 },
-        'NAT': { lat: -5.7681, lon: -35.3767 },
-        'MCZ': { lat: -9.5108, lon: -35.7917 },
-        'VCP': { lat: -23.0074, lon: -47.1345 },
-        'THE': { lat: -5.0599, lon: -42.8234 },
-        'SLZ': { lat: -2.5854, lon: -44.2341 }
-    };
-    
-    let nearest = 'Unknown';
-    let minDistance = Infinity;
-    
-    for (const [code, coords] of Object.entries(airports)) {
-        const distance = calculateDistance(lat, lon, coords.lat, coords.lon);
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearest = code;
-        }
-    }
-    
-    return nearest;
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth's radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
 }
 
 function determineStatus(verticalRate, velocity) {
