@@ -3,24 +3,23 @@ body {
     font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    text-align: center;
     background-color: #121212;
     color: #E0E0E0;
     transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Container principal */
 .container {
     max-width: 800px;
-    margin: 40px auto;
+    margin: 20px auto;
     text-align: center;
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Estilo do player */
@@ -31,7 +30,7 @@ body {
 /* Modal fixo para controle de volume */
 .volume-control {
     position: fixed;
-    bottom: 20px;
+    bottom: 40px;
     right: 20px;
     background-color: rgba(255, 255, 255, 0.7);
     color: rgb(0, 0, 0);
@@ -151,47 +150,90 @@ button:hover {
 
 .flight-status {
     margin: 20px 0;
-    background: rgba(255, 255, 255, 0.1);
+    background: #000;
     padding: 20px;
     border-radius: 10px;
-    backdrop-filter: blur(10px);
+    font-family: 'Courier New', monospace;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
 }
 
 .flight-status h2 {
     margin-bottom: 15px;
-    color: #fff;
+    color: #ffffff;
+    text-align: center;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.display-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ffffff;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.current-time {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.airport-code {
+    font-weight: bold;
+    font-size: 24px;
+    color: #ffffff;
 }
 
 #flightTable {
     width: 100%;
     border-collapse: collapse;
-    color: #fff;
+    color: #ffffff;
+    font-size: 16px;
 }
 
 #flightTable th,
 #flightTable td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 #flightTable th {
     background: rgba(255, 255, 255, 0.1);
-    font-weight: 600;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #flightTable tr:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.status-active {
-    color: #4CAF50;
+/* Status colors */
+.status-climbing {
+    color: #00ff00;
+}
+
+.status-descending {
+    color: #ff9900;
 }
 
 .status-holding {
-    color: #FFC107;
+    color: #ffff00;
+}
+
+.status-active {
+    color: #00ff00;
 }
 
 .status-landed {
-    color: #2196F3;
+    color: #00ccff;
+}
+
+/* Remove the blinking animation */
+#flightTable tr {
+    animation: none;
 }
